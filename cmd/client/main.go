@@ -32,6 +32,48 @@ func main() {
 		log.Fatalf("Error creating channel and queue: %v", err)
 	}
 
+	state := gamelogic.NewGameState(username)
+	loop := true
+	for loop == true {
+		inputs := gamelogic.GetInput()
+		if len(inputs) == 0 {
+			continue
+		}
+		switch inputs[0] {
+		case "spawn":
+			err = state.CommandSpawn(inputs)
+			if err != nil {
+				log.Printf("Error spawning: %s", err)
+				continue
+			}
+
+		case "move":
+			move, err := state.CommandMove(inputs)
+			if err != nil {
+				log.Printf("Error move: %v", err)
+				continue
+			}
+			log.Print("Successful move!")
+			log.Printf("%v", move)
+
+		case "status":
+			state.CommandStatus()
+
+		case "help":
+			gamelogic.PrintClientHelp()
+
+		case "spam":
+			log.Print("Spamming not allowed yet!")
+
+		case "quit":
+			gamelogic.PrintQuit()
+			return
+
+		default:
+			log.Printf("Error unknown command: %s", inputs[0])
+		}
+	}
+
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	<-signalChan
