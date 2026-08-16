@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 
@@ -27,11 +28,40 @@ func main() {
 		log.Fatalf("Error creating channel: %v", err)
 	}
 
-	err = pubsub.PublishJSON(newChan, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
-		IsPaused: true,
-	})
-	if err != nil {
-		log.Fatalf("Error publishing JSON: %v", err)
+	gamelogic.PrintServerHelp()
+	loop := true
+	for loop == true {
+		inputs := gamelogic.GetInput()
+		if len(inputs) == 0 {
+			continue
+		}
+		switch inputs[0] {
+		case "pause":
+			log.Printf("Sending pause message: %s", inputs[0])
+			err = pubsub.PublishJSON(newChan, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
+				IsPaused: true,
+			})
+			if err != nil {
+				log.Fatalf("Error publishing JSON: %v", err)
+			}
+
+		case "resume":
+			log.Printf("Sending resume message: %s", inputs[0])
+			err = pubsub.PublishJSON(newChan, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
+				IsPaused: false,
+			})
+			if err != nil {
+				log.Fatalf("Error publishing JSON: %v", err)
+			}
+
+		case "quit":
+			log.Printf("Sending quit message: %s", inputs[0])
+			loop = false
+			return
+
+		default:
+			continue
+		}
 	}
 
 	signalChan := make(chan os.Signal, 1)
