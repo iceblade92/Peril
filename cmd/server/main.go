@@ -28,6 +28,11 @@ func main() {
 		log.Fatalf("Error creating channel: %v", err)
 	}
 
+	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilTopic, routing.GameLogSlug, routing.GameLogSlug+".*", pubsub.Durable)
+	if err != nil {
+		log.Fatalf("could not declare and bind queue: %v", err)
+	}
+
 	gamelogic.PrintServerHelp()
 	loop := true
 	for loop == true {
