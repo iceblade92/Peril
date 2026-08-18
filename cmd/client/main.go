@@ -27,12 +27,12 @@ func main() {
 		log.Fatalf("Error with Welcome: %v", err)
 	}
 
-	_, _, err = pubsub.DeclareAndBind(connection, routing.ExchangePerilDirect, routing.PauseKey+"."+username, routing.PauseKey, pubsub.Transient) // remember to add channel and queue later
+	state := gamelogic.NewGameState(username)
+	err = pubsub.SubscribeJSON(connection, routing.ExchangePerilDirect, routing.PauseKey+"."+username, routing.PauseKey, pubsub.Transient, handlerPause(state))
 	if err != nil {
-		log.Fatalf("Error creating channel and queue: %v", err)
+		log.Fatalf("Error subscribeing json: %v", err)
 	}
 
-	state := gamelogic.NewGameState(username)
 	loop := true
 	for loop == true {
 		inputs := gamelogic.GetInput()
